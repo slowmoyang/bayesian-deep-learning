@@ -3,14 +3,11 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-from functools import reduce
 
 import tensorflow as tf
 from tensorflow.python.keras.utils import conv_utils
 from tensorflow.python.ops import nn_ops
 from tensorflow_probability.python.layers.dense_variational_v2 import _make_kl_divergence_penalty
-
-
 
 
 class ConvVariational(tf.keras.layers.Layer):
@@ -48,8 +45,7 @@ class ConvVariational(tf.keras.layers.Layer):
         self.padding = conv_utils.normalize_padding(padding)
         if (self.padding == 'causal' and not isinstance(self,
                                                         (Conv1DVariational))):
-            raise ValueError('Causal padding is only supported for `Conv1DVariational`'
-                             'and ``SeparableConv1D`.')
+            raise ValueError('Causal padding is only supported for `Conv1DVariational`.')
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.dilation_rate = conv_utils.normalize_tuple(
             dilation_rate, rank, 'dilation_rate')
@@ -87,7 +83,6 @@ class ConvVariational(tf.keras.layers.Layer):
             data_format=conv_utils.convert_data_format(
                 self.data_format, self.rank + 2))
 
-        # self.num_weights = reduce(lambda x, y: x * y, self.kernel_shape)
         self.num_weights = np.prod(self.kernel_shape)
 
         self._posterior = self._make_posterior_fn(
@@ -139,24 +134,14 @@ class ConvVariational(tf.keras.layers.Layer):
             return self.activation(outputs)
         return outputs
 
-    def get_config(self):
-        # TODO make_posterior_fn, make_prior_fn
-        config = {
-            'filters': self.filters,
-            'kernel_size': self.kernel_size,
-            'kl_weight': self.kl_weight,
-            'kl_use_exact': self.kl_use_exact,
-            'strides': self.strides,
-            'padding': self.padding,
-            'data_format': self.data_format,
-            'dilation_rate': self.dilation_rate,
-            'activation': activations.serialize(self.activation),
-            'use_bias': self.use_bias,
-            'activity_regularizer':
-                regularizers.serialize(self.activity_regularizer),
-        }
-        base_config = super(Conv, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+    def _compute_causal_padding(self):
+        left_pad = self.dilation_rate[0] * (self.kernel_size[0] - 1)
+        if self.data_format == 'channels_last':
+            causal_padding = [[0, 0], [left_pad, 0], [0, 0]]
+        else:
+            causal_padding = [[0, 0], [0, 0], [left_pad, 0]]
+        return causal_padding
+
 
 class Conv1DVariational(ConvVariational):
     def __init__(self,
@@ -191,6 +176,11 @@ class Conv1DVariational(ConvVariational):
             activity_regularizer=activity_regularizer,
             **kwargs)
 
+    def call(self, inputs):
+        if self.padding == 'causal':
+            inputs = array_ops.pad(inputs, self._compute_causal_padding())
+        return super(Conv1D, self).call(inputs)
+
 
 class Conv2DVariational(ConvVariational):
     def __init__(self,
@@ -224,4 +214,3 @@ class Conv2DVariational(ConvVariational):
             use_bias=use_bias,
             activity_regularizer=activity_regularizer,
             **kwargs)
-
