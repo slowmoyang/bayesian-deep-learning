@@ -4,7 +4,11 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 tfd = tfp.distributions
 
+
 def posterior_mean_field(kernel_size, bias_size=0, dtype=None):
+    '''
+    stole from https://github.com/tensorflow/probability/blob/master/tensorflow_probability/examples/jupyter_notebooks/Probabilistic_Layers_Regression.ipynb
+    '''
     n = kernel_size + bias_size
     c = np.log(np.expm1(1.))
     return tf.keras.Sequential([
@@ -18,6 +22,9 @@ def posterior_mean_field(kernel_size, bias_size=0, dtype=None):
         ])
 
 def prior_trainable(kernel_size, bias_size=0, dtype=None):
+    '''
+    stole from https://github.com/tensorflow/probability/blob/master/tensorflow_probability/examples/jupyter_notebooks/Probabilistic_Layers_Regression.ipynb
+    '''
     n = kernel_size + bias_size
     return tf.keras.Sequential([
         tfp.layers.VariableLayer(n, dtype=dtype),
