@@ -11,7 +11,7 @@ setuptools.setup(
     author="Seungjin Yang",
     author_email="seungjin.yang@cern.ch",
     description="It just has codes based on tensorflow-probability",
-    url="https://github.com/seungjin-yang/extended-tensorflow-probability",
+    url="https://github.com/seungjin-yang/bayesian-deep-learning",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3.6",
