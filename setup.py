@@ -1,7 +1,7 @@
 import setuptools
 
 REQUIRED_PACKAGE = [
-    'tensorflow-probability>=0.8.0-rc0'
+    'tensorflow-probability>=0.8.0'
 ]
 
 setuptools.setup(
