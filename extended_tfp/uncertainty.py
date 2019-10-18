@@ -32,6 +32,7 @@ def compute_predictive_entropy(prob_samples, eps=1e-12):
     '''
     # predictive probability
     pred_prob = tf.reduce_mean(prob_samples, axis=0)
+    # FIXME do it without clipping
     pred_log_prob = tf.math.log(tf.clip_by_value(pred_prob, eps, 1))
     return -tf.reduce_sum(pred_prob * pred_log_prob, axis=1)
 
@@ -49,5 +50,6 @@ def compute_mutual_information(prob_samples, eps=1e-12):
     predictive_entropy = compute_predictive_entropy(prob_samples)
 
     log_prob_samples = tf.math.log(tf.clip_by_value(prob_samples, eps, 1))
+    # FIXME do it without clipping
     neg_entropy_samples = tf.reduce_sum(prob_samples * log_prob_samples, axis=2)
     return predictive_entropy + tf.reduce_mean(neg_entropy_samples, axis=0)
